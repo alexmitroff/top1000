@@ -22,6 +22,12 @@ class Spotify:
         self.token = response['access_token']
         self.token_type = response['token_type']
 
+        self.headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': f'{self.token_type} {self.token}'
+        }
+
     @staticmethod
     def process_request(string):
         strings = string.lower().split(' ')
@@ -34,12 +40,6 @@ class Spotify:
 
         title = self.process_request(title)
         artist = self.process_request(artist)
-
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'{self.token_type} {self.token}'
-        }
 
         params = {
             'q': title,
@@ -55,11 +55,21 @@ class Spotify:
         if offset is not None:
             params['offset'] = offset
         response = requests.get('https://api.spotify.com/v1/search',
-                                headers=headers,
+                                headers=self.headers,
                                 params=params)
 
         if response.status_code < 200 or response.status_code > 299:
             print(f'Search request returns {response.status_code}')
+            return
+
+        return response.json()
+
+    def get_artist(self, artist_id):
+        response = requests.get(f'https://api.spotify.com/v1/artists/{artist_id}',
+                                headers=self.headers)
+
+        if response.status_code < 200 or response.status_code > 299:
+            print(f'Artist request returns {response.status_code}')
             return
 
         return response.json()
